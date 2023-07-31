@@ -12,22 +12,31 @@ function App() {
     fetch(`http://api.airvisual.com/v2/nearest_city?key=${APIKEY}`)
       .then((response) => {
         console.log(response);
+        // 400 - 499 : Erreur clients
+        // 500 - 599 : Erreur serveur
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}, ${response.statusText} `);
+        }
         return response.json();
       })
       .then((responseData) => {
-        console.log(responseData);
         setWheatherData({
           city: responseData.data.city,
           country: responseData.data.country,
           iconId: responseData.data.current.weather.ic,
           temperature: responseData.data.current.weather.tp,
         });
+      })
+      .catch((err) => {
+        SetErrorInfo(err.message);
       });
   }, []);
 
   return (
     <main>
-      <div className={`loader-container ${!weatherData && "active"}`}>
+      <div
+        className={`loader-container ${!weatherData && !errorInfo && "active"}`}
+      >
         <img src={loader} alt="loading icon" />
       </div>
 
@@ -49,8 +58,8 @@ function App() {
       {errorInfo && !weatherData && (
         <>
           <p className="error-information">
-            {errorInfo.msg}
-            <img src={browser} alt="error icon" />
+            {errorInfo}
+            <img className="info-icon" src={browser} alt="error icon" />
           </p>
         </>
       )}
